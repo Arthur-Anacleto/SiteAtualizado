@@ -28,7 +28,53 @@
         <a href="exercicios3.html" class="btn btn-primary">Cadastrar novo cliente</a>
     </div>
 
+    <!-- Modal para edição -->
+    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarModalLabel">Editar Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editarClienteForm">
+                        <div class="mb-3">
+                            <label for="editarNome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="editarNome">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editarEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarTelefone" class="form-label">Telefone</label>
+                            <input type="text" class="form-control" id="editarTelefone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarRua" class="form-label">Rua</label>
+                            <input type="text" class="form-control" id="editarRua">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarBairro" class="form-label">Bairro</label>
+                            <input type="text" class="form-control" id="editarBairro">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editarCEP" class="form-label">CEP</label>
+                            <input type="text" class="form-control" id="editarCEP">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarEdicoes()">Salvar alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let clienteIndex = -1; // Variável global para armazenar o índice do cliente editado
+
         // Função para carregar os clientes na tabela
         function carregarClientes() {
             const clientes = JSON.parse(localStorage.getItem('clientes')) || [];
@@ -45,10 +91,10 @@
                     <td>${cliente.bairro}</td>
                     <td>${cliente.cep}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editarCliente(${index})">Editar</button>
+                        <button class="btn btn-warning" onclick="abrirModalEditar(${index})">Editar</button>
                         <button class="btn btn-danger" onclick="excluirCliente(${index})">Excluir</button>
                     </td>
-                `
+                `;
                 tabela.appendChild(tr);
             });
         }
@@ -61,36 +107,60 @@
             carregarClientes();
         }
 
-        // Função para editar um cliente
-        function editarCliente(index) {
+        // Função para abrir o modal de edição
+        function abrirModalEditar(index) {
             let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-            let cliente = clientes[index];
-           
-            let novoNome = prompt("Novo nome:", cliente.nome);
-            let novoEmail = prompt("Novo email:", cliente.email);
-            let novoTelefone = prompt("Novo telefone:", cliente.telefone);
-            let novoBairro = prompt("Novo bairro:", cliente.bairro);
-            let novoRua = prompt("Nova rua:", cliente.rua);
-            let novoCEP = prompt("Novo CEP:", cliente.cep);
+            const cliente = clientes[index];
+            clienteIndex = index; // Armazena o índice do cliente
 
-            if (novoNome && novoEmail && novoTelefone && novoBairro && novoRua && novoCEP) {
-                clientes[index] = { 
-                    ...cliente, 
-                    nome: novoNome, 
-                    email: novoEmail, 
-                    telefone: novoTelefone, 
-                    bairro: novoBairro, 
-                    rua: novoRua, 
-                    cep: novoCEP 
-                };
-                localStorage.setItem('clientes', JSON.stringify(clientes));
-                carregarClientes();
-            }
+            // Preenche os inputs do modal com as informações do cliente
+            document.getElementById('editarNome').value = cliente.nome;
+            document.getElementById('editarEmail').value = cliente.email;
+            document.getElementById('editarTelefone').value = cliente.telefone;
+            document.getElementById('editarRua').value = cliente.rua;
+            document.getElementById('editarBairro').value = cliente.bairro;
+            document.getElementById('editarCEP').value = cliente.cep;
+
+            // Exibe o modal
+            const myModal = new bootstrap.Modal(document.getElementById('editarModal'));
+            myModal.show();
+        }
+
+        // Função para salvar as alterações no cliente
+        function salvarEdicoes() {
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            const cliente = clientes[clienteIndex];
+
+            const novoNome = document.getElementById('editarNome').value;
+            const novoEmail = document.getElementById('editarEmail').value;
+            const novoTelefone = document.getElementById('editarTelefone').value;
+            const novoRua = document.getElementById('editarRua').value;
+            const novoBairro = document.getElementById('editarBairro').value;
+            const novoCEP = document.getElementById('editarCEP').value;
+
+            // Atualiza o cliente com os novos valores (somente os campos preenchidos)
+            clientes[clienteIndex] = {
+                ...cliente,
+                nome: novoNome || cliente.nome,
+                email: novoEmail || cliente.email,
+                telefone: novoTelefone || cliente.telefone,
+                rua: novoRua || cliente.rua,
+                bairro: novoBairro || cliente.bairro,
+                cep: novoCEP || cliente.cep,
+            };
+
+            localStorage.setItem('clientes', JSON.stringify(clientes));
+            carregarClientes();
+
+            // Fecha o modal
+            const myModal = bootstrap.Modal.getInstance(document.getElementById('editarModal'));
+            myModal.hide();
         }
 
         // Carregar a lista de clientes quando a página for carregada
         window.onload = carregarClientes;
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
